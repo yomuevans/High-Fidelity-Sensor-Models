@@ -21,33 +21,36 @@ double generate_noise() {
 }
 
 // Simulate accelerometer measurements based on true acceleration
-double simulate_accelerometer(double true_acceleration) {
-    // Calculate temperature-dependent bias
-    double temperature = 25.0; // Assumed temperature in Celsius
-    double temperature_bias = TEMPERATURE_BIAS + TEMPERATURE_SCALE_FACTOR * (temperature - 25.0);
-
-    // Add constant bias and temperature-dependent bias
-    double measured_acceleration = true_acceleration + CONSTANT_BIAS + temperature_bias;
-
-    // Apply resolution and generate noise
-    measured_acceleration += RESOLUTION * round(generate_noise() / RESOLUTION);
-
-    // Apply misalignment
-    measured_acceleration += AXES_MISALIGNMENT * generate_noise();
-
-    return measured_acceleration;
+void simulate_accelerometer(double true_accelerations[3], double measured_accelerations[3]) {
+    // Calculate temperature-dependent bias for all axes
+    double temperature_biases[3];
+    temperature_biases[0] = TEMPERATURE_BIAS + TEMPERATURE_SCALE_FACTOR * (25.0 - 25.0);
+    temperature_biases[1] = TEMPERATURE_BIAS + TEMPERATURE_SCALE_FACTOR * (25.0 - 25.0);
+    temperature_biases[2] = TEMPERATURE_BIAS + TEMPERATURE_SCALE_FACTOR * (25.0 - 25.0);
+    
+    for (int axis = 0; axis < 3; axis++) {
+        // Add constant bias and temperature-dependent bias
+        measured_accelerations[axis] = true_accelerations[axis] + CONSTANT_BIAS + temperature_biases[axis];
+        
+        // Apply resolution and generate noise
+        measured_accelerations[axis] += RESOLUTION * round(generate_noise() / RESOLUTION);
+        
+        // Apply misalignment
+        measured_accelerations[axis] += AXES_MISALIGNMENT * generate_noise();
+    }
 }
 
 int main() {
     srand(time(NULL)); // Seed random number generator
-
-    double true_acceleration = 9.81; // True linear acceleration (m/s^2)
-
-    // Simulate accelerometer measurement
-    double measured_acceleration = simulate_accelerometer(true_acceleration);
-
-    printf("True Acceleration: %.2f m/s^2\n", true_acceleration);
-    printf("Measured Acceleration: %.2f m/s^2\n", measured_acceleration);
-
+    
+    double true_accelerations[3] = {0.0, 0.0, 9.81}; // True linear accelerations (m/s^2)
+    double measured_accelerations[3];
+    
+    // Simulate accelerometer measurements
+    simulate_accelerometer(true_accelerations, measured_accelerations);
+    
+    printf("True Accelerations: %.2f m/s^2, %.2f m/s^2, %.2f m/s^2\n", true_accelerations[0], true_accelerations[1], true_accelerations[2]);
+    printf("Measured Accelerations: %.2f m/s^2, %.2f m/s^2, %.2f m/s^2\n", measured_accelerations[0], measured_accelerations[1], measured_accelerations[2]);
+    
     return 0;
 }
