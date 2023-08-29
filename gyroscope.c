@@ -21,37 +21,41 @@ double generate_noise() {
            cos(2 * M_PI * (double) rand() / RAND_MAX);
 }
 
-// Simulate gyroscope measurements based on true angular velocity
-double simulate_gyroscope(double true_angular_velocity) {
-    // Calculate temperature-dependent bias
-    double temperature = 25.0; // Assumed temperature in Celsius
-    double temperature_bias = TEMPERATURE_BIAS + TEMPERATURE_SCALE_FACTOR * (temperature - 25.0);
-
-    // Calculate acceleration-dependent bias
+// Simulate gyroscope measurements based on true angular velocities
+void simulate_gyroscope(double true_angular_velocities[3], double measured_angular_velocities[3]) {
+    // Calculate temperature-dependent bias for all axes
+    double temperature_biases[3];
+    temperature_biases[0] = TEMPERATURE_BIAS + TEMPERATURE_SCALE_FACTOR * (25.0 - 25.0);
+    temperature_biases[1] = TEMPERATURE_BIAS + TEMPERATURE_SCALE_FACTOR * (25.0 - 25.0);
+    temperature_biases[2] = TEMPERATURE_BIAS + TEMPERATURE_SCALE_FACTOR * (25.0 - 25.0);
+    
+    // Calculate acceleration-dependent bias for all axes
     double acceleration_bias = ACCELERATION_BIAS;
-
-    // Add constant bias, temperature-dependent bias, and acceleration-dependent bias
-    double measured_angular_velocity = true_angular_velocity + CONSTANT_BIAS + temperature_bias + acceleration_bias;
-
-    // Apply resolution and generate noise
-    measured_angular_velocity += RESOLUTION * round(generate_noise() / RESOLUTION);
-
-    // Apply misalignment
-    measured_angular_velocity += AXES_MISALIGNMENT * generate_noise();
-
-    return measured_angular_velocity;
+    
+    for (int axis = 0; axis < 3; axis++) {
+        // Add constant bias, temperature-dependent bias, and acceleration-dependent bias
+        measured_angular_velocities[axis] = true_angular_velocities[axis] + CONSTANT_BIAS + temperature_biases[axis] + acceleration_bias;
+        
+        // Apply resolution and generate noise
+        measured_angular_velocities[axis] += RESOLUTION * round(generate_noise() / RESOLUTION);
+        
+        // Apply misalignment
+        measured_angular_velocities[axis] += AXES_MISALIGNMENT * generate_noise();
+    }
 }
 
 int main() {
     srand(time(NULL)); // Seed random number generator
-
-    double true_angular_velocity = 0.1; // True angular velocity (rad/s)
-
-    // Simulate gyroscope measurement
-    double measured_angular_velocity = simulate_gyroscope(true_angular_velocity);
-
-    printf("True Angular Velocity: %.3f rad/s\n", true_angular_velocity);
-    printf("Measured Angular Velocity: %.3f rad/s\n", measured_angular_velocity);
-
+    
+    double true_angular_velocities[3] = {0.1, 0.2, 0.3}; // True angular velocities (rad/s)
+    double measured_angular_velocities[3];
+    
+    // Simulate gyroscope measurements
+    simulate_gyroscope(true_angular_velocities, measured_angular_velocities);
+    
+    printf("True Angular Velocities: %.3f rad/s, %.3f rad/s, %.3f rad/s\n", true_angular_velocities[0], true_angular_velocities[1], true_angular_velocities[2]);
+    printf("Measured Angular Velocities: %.3f rad/s, %.3f rad/s, %.3f rad/s\n", measured_angular_velocities[0], measured_angular_velocities[1], measured_angular_velocities[2]);
+    
     return 0;
 }
+
