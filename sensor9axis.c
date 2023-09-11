@@ -43,13 +43,17 @@ double generateNoise(double min, double max) {
 // Function to simulate noisy gyroscope measurements
 double simulateGyroMeasurement(SensorData sensor, double trueValue) {
     double noise = generateNoise(-sensor.gyroNoise, sensor.gyroNoise);
-    return trueValue + noise;
+    double sensitivityError = (sensor.gyroSensitivityError / 100.0) * sensor.gyroFsr;
+    double sensitivityTemp = (sensor.gyroSensitivityTemp / 100.0) * (sensor.gyroFsr - sensor.gyroZRO);
+    return trueValue + noise + sensitivityError + sensitivityTemp;
 }
 
 // Function to simulate noisy accelerometer measurements
 double simulateAccelMeasurement(SensorData sensor, double trueValue) {
     double noise = generateNoise(-sensor.accelNoise, sensor.accelNoise);
-    return trueValue + noise;
+    double sensitivityError = (sensor.accelSensitivityError / 100.0) * sensor.accelFsr;
+    double sensitivityTemp = (sensor.accelSensitivityTemp / 100.0) * (sensor.accelFsr - sensor.accelZGO);
+    return trueValue + noise + sensitivityError + sensitivityTemp;
 }
 
 // Function to simulate noisy compass measurements
